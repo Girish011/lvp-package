@@ -356,19 +356,27 @@ class LVPProcessor:
             
             processing_time = (datetime.now() - start_time).total_seconds()
             
-            # Create package
+            # Read keyframe data into memory BEFORE temp dir is cleaned up
+            keyframe_data = []
+            for kf_path in keyframe_paths:
+                if os.path.exists(kf_path):
+                    with open(kf_path, 'rb') as f:
+                        keyframe_data.append(f.read())
+            
+            # Create package with keyframe data in memory
             package = LVPPackage(
                 source_filename=os.path.basename(video_path),
                 source_duration=duration,
                 source_resolution=(width, height),
                 source_size=source_size,
-                keyframe_paths=keyframe_paths,
+                keyframe_paths=[],  # Paths no longer valid after temp cleanup
                 keyframe_timestamps=timestamps,
                 keyframe_resolution=self.profile.resolution,
                 transcript=transcript_data,
                 scenes=scenes,
                 profile_name=self.profile.name,
-                processing_time=processing_time
+                processing_time=processing_time,
+                _keyframe_data=keyframe_data  # Store actual data
             )
             
             return package
