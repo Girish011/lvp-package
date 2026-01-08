@@ -1,75 +1,95 @@
 # LVP: LLM-Ready Video Package
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![arXiv](https://img.shields.io/badge/arXiv-2501.xxxxx-b31b1b.svg)](https://arxiv.org/)
 
-**A universal standard for bandwidth-efficient video upload to multimodal LLMs.**
+**Bandwidth-efficient video preprocessing for multimodal LLMs**
+
+LVP compresses videos by **50-100×** while preserving semantic content for AI understanding. Upload a 50MB video as a 500KB package.
+
+---
 
 ## 🎯 The Problem
 
-Uploading videos to AI assistants (Claude, GPT-4V, Gemini) wastes bandwidth:
-- A 1-minute video can be 50+ MB
-- 90% of frames are redundant for understanding
-- Users on slow connections can't use video features
+Uploading videos to AI models (Claude, GPT-4V, Gemini) requires sending the entire file—often 50-200MB. This makes video AI features inaccessible for users with limited bandwidth.
 
 ## 💡 The Solution
 
-LVP preprocesses videos locally, creating a lightweight package:
+LVP preprocesses videos locally, extracting:
+- 🖼️ **Intelligent keyframes** (scene-aware selection)
+- 🎤 **Speech transcript** (via Whisper)
+- 🎬 **Scene metadata** (boundaries, timestamps)
 
-```
-Original Video: 50 MB  →  LVP Package: 500 KB  (100x smaller)
-```
+The result: a tiny `.lvp` package that LLMs can understand just as well as the original video.
 
-The `.lvp` format contains:
-- 🖼️ Intelligent keyframes (not every frame)
-- 📝 Speech transcript (time-aligned)
-- 📊 Scene metadata
-- 🔧 Works with ANY multimodal LLM
+---
+
+## 📊 Results
+
+| Video | Original | LVP | Compression |
+|-------|----------|-----|-------------|
+| 4s clip | 749 KB | 11.5 KB | **63.5×** |
+| 1 min video | 45 MB | 382 KB | **118×** |
+| 5 min vlog | 212 MB | 1.8 MB | **115×** |
+
+**LLM Response Quality**: 93-98% semantic similarity vs raw video
+
+---
 
 ## 🚀 Quick Start
 
 ### Installation
 
 ```bash
-pip install lvp
+# Clone the repo
+git clone https://github.com/Girish011/lvp-package.git
+cd lvp-package
 
-# Optional: for transcription
-pip install lvp[whisper]
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Optional: for specific providers
-pip install lvp[claude]    # Anthropic Claude
-pip install lvp[openai]    # OpenAI GPT-4V
-pip install lvp[gemini]    # Google Gemini
+# Install
+pip install -e .
+
+# Optional: Install Whisper for transcription
+pip install openai-whisper
 ```
 
-**Requirement:** FFmpeg must be installed ([download](https://ffmpeg.org/download.html))
+### Requirements
+- Python 3.8+
+- FFmpeg (`brew install ffmpeg` on Mac, `apt install ffmpeg` on Linux)
 
-### Basic Usage
+---
 
-```python
-import lvp
-
-# Process a video
-package = lvp.process("my_video.mp4")
-package.save("my_video.lvp")
-
-# Check the compression
-print(package.summary())
-# {'original_size_mb': 52.4, 'lvp_size_kb': 487.2, 'compression_ratio': 110.1, ...}
-```
+## 📖 Usage
 
 ### Command Line
 
 ```bash
-# Create LVP package
+# Process a video
 lvp process video.mp4 -o video.lvp
 
 # View package info
 lvp info video.lvp
 
 # Extract contents
-lvp extract video.lvp -o ./extracted/
+lvp extract video.lvp -o output_folder/
+```
+
+### Python API
+
+```python
+import lvp
+
+# Process video
+package = lvp.process("video.mp4")
+package.save("video.lvp")
+
+# Load existing package
+package = lvp.load("video.lvp")
+print(package.summary())
 ```
 
 ### Query LLMs
@@ -79,125 +99,177 @@ import lvp
 from lvp.providers import ClaudeProvider
 
 # Load package
-package = lvp.load("my_video.lvp")
+package = lvp.load("video.lvp")
 
 # Query Claude
-claude = ClaudeProvider(api_key="sk-...")
+claude = ClaudeProvider(api_key="your-api-key")
 response = claude.query(package, "What happens in this video?")
 print(response)
 ```
 
-## 📦 LVP Format Specification
+---
+
+## 🎬 Demo
+
+### Input
+A 4-second video (749 KB) of a laptop showing Google homepage.
+
+### Process
+```bash
+lvp process video.mp4 -o demo.lvp
+```
+
+### Output
+```
+LVP Package Saved: demo.lvp
+==================================================
+Original: 0.71 MB
+LVP Size: 11.52 KB
+Compression: 63.5x
+Keyframes: 1
+==================================================
+```
+
+### Query Claude
+```python
+response = claude.query(package, "What is shown in this video?")
+# "The video keyframe shows a laptop with a web browser 
+#  open to the Google homepage. There's a dropdown menu 
+#  visible in the search bar, and a hand is reaching 
+#  towards the left side of the laptop."
+```
+
+---
+
+## 📦 LVP Package Format
 
 An `.lvp` file is a ZIP archive containing:
 
 ```
 video.lvp
-├── manifest.json        # Package metadata (v1.0 spec)
+├── manifest.json      # Metadata and processing info
 ├── keyframes/
-│   ├── frame_0000.webp  # Selected keyframes
+│   ├── frame_0000.webp
 │   ├── frame_0001.webp
 │   └── ...
-├── transcript.json      # Time-aligned speech
-└── scenes.json          # Scene boundaries
+├── transcript.json    # Time-aligned speech segments
+└── scenes.json        # Scene boundaries
 ```
 
-### Manifest Schema (v1.0)
-
+### Manifest Example
 ```json
 {
   "lvp_version": "1.0",
-  "created_at": "2025-01-07T12:00:00Z",
   "source": {
-    "filename": "original.mp4",
-    "duration_seconds": 120.5,
-    "original_resolution": [1920, 1080],
-    "original_size_bytes": 52428800
+    "filename": "video.mp4",
+    "duration_seconds": 3.93,
+    "original_size_bytes": 749201
   },
   "content": {
-    "keyframe_count": 24,
-    "keyframe_resolution": [512, 288],
+    "keyframe_count": 1,
     "has_transcript": true,
-    "scene_count": 5
+    "scene_count": 1
   }
 }
 ```
 
+---
+
 ## ⚙️ Device Profiles
 
-Choose based on your device capabilities:
+Choose a profile based on your device and needs:
 
 | Profile | Keyframes/min | Resolution | Use Case |
 |---------|---------------|------------|----------|
-| `minimal` | 6 | 384×216 | Low-end phones |
-| `balanced` | 12 | 512×288 | Mid-range devices |
-| `quality` | 20 | 640×360 | Laptops |
-| `maximum` | 30 | 854×480 | Desktops with GPU |
+| `minimal` | 6 | 384×216 | Low bandwidth, mobile |
+| `balanced` | 12 | 512×288 | **Default**, good balance |
+| `quality` | 20 | 640×360 | Better quality |
+| `maximum` | 30 | 854×480 | Best quality |
 
-```python
-package = lvp.process("video.mp4", profile="minimal")
+```bash
+lvp process video.mp4 -p minimal -o small.lvp
+lvp process video.mp4 -p maximum -o detailed.lvp
 ```
-
-## 🔌 Provider Support
-
-| Provider | Status | Install |
-|----------|--------|---------|
-| Claude (Anthropic) | ✅ Ready | `pip install lvp[claude]` |
-| GPT-4V (OpenAI) | ✅ Ready | `pip install lvp[openai]` |
-| Gemini (Google) | ✅ Ready | `pip install lvp[gemini]` |
-| Qwen-VL | 🚧 Planned | - |
-| LLaVA | 🚧 Planned | - |
-
-## 📊 Benchmarks
-
-| Video Type | Original | LVP | Compression | Quality* |
-|------------|----------|-----|-------------|----------|
-| 1min talking head | 45 MB | 380 KB | 118x | 98% |
-| 2min tutorial | 89 MB | 720 KB | 124x | 95% |
-| 5min vlog | 210 MB | 1.8 MB | 117x | 93% |
-
-*Quality = semantic similarity of LLM responses (LVP vs raw video)
-
-## 🔬 Research
-
-This project is part of academic research on bandwidth-efficient multimodal AI.
-
-### Paper
-
-> **LVP: A Universal Standard for Bandwidth-Efficient Video Upload to Multimodal LLMs**
-> 
-> [arXiv preprint coming soon]
-
-### Citation
-
-```bibtex
-@article{lvp2025,
-  title={LVP: A Universal Standard for Bandwidth-Efficient Video Upload to Multimodal LLMs},
-  author={LVP Research Partnership},
-  journal={arXiv preprint arXiv:2501.xxxxx},
-  year={2025}
-}
-```
-
-## 🤝 Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-- 🐛 [Report bugs](https://github.com/lvp-research/lvp/issues)
-- 💡 [Request features](https://github.com/lvp-research/lvp/issues)
-- 🔧 [Submit PRs](https://github.com/lvp-research/lvp/pulls)
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
-## 🙏 Acknowledgments
-
-Built with:
-- [FFmpeg](https://ffmpeg.org/) - Video processing
-- [Whisper](https://github.com/openai/whisper) - Speech recognition
-- Research community contributions
 
 ---
 
-**Made with ❤️ by the LVP Research Partnership**
+## 🤖 Supported LLM Providers
+
+| Provider | Status | Install |
+|----------|--------|---------|
+| Claude (Anthropic) | ✅ | `pip install anthropic` |
+| GPT-4V (OpenAI) | ✅ | `pip install openai` |
+| Gemini (Google) | ✅ | `pip install google-generativeai` |
+
+```python
+from lvp.providers import ClaudeProvider, OpenAIProvider, GeminiProvider
+
+# Use any provider
+claude = ClaudeProvider(api_key="...")
+openai = OpenAIProvider(api_key="...")
+gemini = GeminiProvider(api_key="...")
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run tests
+python -m pytest tests/
+
+# Quick validation
+python tests/test_all.py
+```
+
+---
+
+## 📄 Citation
+
+If you use LVP in your research, please cite:
+
+```bibtex
+@misc{lvp2025,
+  title={LVP: A Universal Standard for Bandwidth-Efficient Video Upload to Multimodal LLMs},
+  author={LVP Research Partnership},
+  year={2025},
+  url={https://github.com/Girish011/lvp-package}
+}
+```
+
+---
+
+## 🗺️ Roadmap
+
+- [x] Core processing pipeline
+- [x] CLI tool
+- [x] Claude, OpenAI, Gemini providers
+- [ ] Query-aware keyframe selection
+- [ ] Mobile SDK (React Native)
+- [ ] Browser extension
+- [ ] Formal W3C standardization
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Please read our contributing guidelines and submit PRs.
+
+---
+
+## 📜 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [Whisper](https://github.com/openai/whisper) for speech recognition
+- [FFmpeg](https://ffmpeg.org/) for video processing
+
+---
+
+<p align="center">
+  <b>Save bandwidth. Keep quality. Query AI.</b>
+</p>

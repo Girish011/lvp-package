@@ -78,3 +78,6 @@ venv.bak/
 *.webm
 test_videos/
 output/
+
+uploads/
+extracted/
