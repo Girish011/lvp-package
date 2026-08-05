@@ -11,7 +11,7 @@ LVP compresses videos by **50-100×** while preserving semantic content for AI u
 
 ## 🎯 The Problem
 
-Uploading videos to AI models (Claude, GPT-4V, Gemini) requires sending the entire file—often 50-200MB. This makes video AI features inaccessible for users with limited bandwidth.
+Uploading videos to AI models (Claude, GPT-4V, Gemini) requires sending the entire file-often 50-200MB. This makes video AI features inaccessible for users with limited bandwidth.
 
 ## 💡 The Solution
 
