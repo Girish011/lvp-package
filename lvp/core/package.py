@@ -5,15 +5,11 @@ LVP Package
 The LVPPackage class represents a processed video ready for LLM consumption.
 """
 
-import os
 import json
+import os
 import zipfile
-import tempfile
-import shutil
 from datetime import datetime
-from typing import List, Optional, Tuple, Dict, Any
-from pathlib import Path
-
+from typing import Any, Dict, List, Optional, Tuple
 
 LVP_VERSION = "1.0"
 
@@ -48,6 +44,10 @@ class LVPPackage:
         scenes: Optional[List[Dict[str, Any]]] = None,
         profile_name: str = "balanced",
         processing_time: float = 0.0,
+        keyframe_method: str = "scene_adaptive",
+        query: Optional[str] = None,
+        estimated_tokens: Optional[int] = None,
+        ffmpeg_version: Optional[str] = None,
         _keyframe_data: Optional[List[bytes]] = None,
         _lvp_path: Optional[str] = None
     ):
@@ -66,8 +66,12 @@ class LVPPackage:
         self.scenes = scenes or []
         self.profile_name = profile_name
         self.processing_time = processing_time
+        self.keyframe_method = keyframe_method
+        self.query = query
+        self.estimated_tokens = estimated_tokens
+        self.ffmpeg_version = ffmpeg_version
         self.created_at = datetime.now().isoformat()
-        
+
         # Store keyframe data
         self._keyframe_data = _keyframe_data
         self._keyframe_paths = keyframe_paths
@@ -142,21 +146,29 @@ class LVPPackage:
         if self._lvp_path and os.path.exists(self._lvp_path):
             lvp_size = os.path.getsize(self._lvp_path)
         
-        return {
+        summary = {
             'source_file': self.source_filename,
             'duration_seconds': round(self.source_duration, 2),
             'original_size_mb': round(self.source_size / 1024 / 1024, 2),
             'lvp_size_kb': round(lvp_size / 1024, 2) if lvp_size else 'not saved',
             'compression_ratio': (
-                round(self.source_size / lvp_size, 1) 
+                round(self.source_size / lvp_size, 1)
                 if lvp_size else 'not saved'
             ),
             'keyframes': self.keyframe_count,
             'scenes': self.scene_count,
             'has_transcript': self.has_transcript,
             'profile': self.profile_name,
-            'processing_time_seconds': round(self.processing_time, 2)
+            'keyframe_method': self.keyframe_method,
+            'processing_time_seconds': round(self.processing_time, 2),
         }
+        if self.estimated_tokens is not None:
+            summary['estimated_tokens'] = self.estimated_tokens
+        if self.query:
+            summary['query'] = self.query
+        if self.ffmpeg_version:
+            summary['ffmpeg_version'] = self.ffmpeg_version
+        return summary
     
     def to_manifest(self) -> Dict[str, Any]:
         """Generate the manifest dictionary."""
@@ -172,8 +184,11 @@ class LVPPackage:
             'processing': {
                 'device_profile': self.profile_name,
                 'processing_time_seconds': self.processing_time,
-                'keyframe_method': 'scene_adaptive',
-                'keyframe_timestamps': self.keyframe_timestamps
+                'keyframe_method': self.keyframe_method,
+                'keyframe_timestamps': self.keyframe_timestamps,
+                'query': self.query,
+                'estimated_tokens': self.estimated_tokens,
+                'ffmpeg_version': self.ffmpeg_version,
             },
             'content': {
                 'keyframe_count': self.keyframe_count,
@@ -194,7 +209,7 @@ class LVPPackage:
         """
         parts = [
             "# Video Analysis Package",
-            f"\n## Source Information",
+            "\n## Source Information",
             f"- File: {self.source_filename}",
             f"- Duration: {self.source_duration:.1f} seconds",
             f"- Resolution: {self.source_resolution[0]}x{self.source_resolution[1]}",
@@ -204,7 +219,7 @@ class LVPPackage:
         
         if self.has_transcript:
             parts.extend([
-                f"\n## Transcript",
+                "\n## Transcript",
                 self.transcript
             ])
         
@@ -320,6 +335,10 @@ class LVPPackage:
             scenes=scenes_data.get('scenes', []),
             profile_name=processing.get('device_profile', 'unknown'),
             processing_time=processing.get('processing_time_seconds', 0),
+            keyframe_method=processing.get('keyframe_method', 'scene_adaptive'),
+            query=processing.get('query'),
+            estimated_tokens=processing.get('estimated_tokens'),
+            ffmpeg_version=processing.get('ffmpeg_version'),
             _keyframe_data=keyframe_data,
             _lvp_path=lvp_path
         )

@@ -1,3 +1,1 @@
-"""LVP Utilities"""
-
-__all__ = []
+"""LVP utilities package (reserved for shared helpers)."""

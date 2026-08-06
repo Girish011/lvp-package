@@ -1,0 +1,481 @@
+{
+  "created_at": "2026-08-06T19:07:45.703216+00:00",
+  "providers": [
+    "deepseek"
+  ],
+  "profile": "balanced",
+  "video_count": 14,
+  "rows": [
+    {
+      "video": "/Users/girish11/Downloads/lvp-package/uploads/1_Minute_Outdoor_ASMR_No_dogs_no_roosters_no_cars_Peaceful.mp4",
+      "metrics": {
+        "source": "1_Minute_Outdoor_ASMR_No_dogs_no_roosters_no_cars_Peaceful.mp4",
+        "original_bytes": 3817907,
+        "lvp_bytes": 287997,
+        "compression_ratio": 13.26,
+        "keyframes": 13,
+        "scenes": 12,
+        "has_transcript": false,
+        "keyframe_method": "scene_adaptive",
+        "estimated_tokens": 13000,
+        "packaging_latency_ms": 1657.6,
+        "profile": "balanced",
+        "ffmpeg_version": "8.0.1"
+      },
+      "bandwidth": {
+        "original_mb": 3.818,
+        "lvp_mb": 0.288,
+        "saved_mb": 3.53,
+        "compression_ratio": 13.26,
+        "estimated_input_tokens": 13000,
+        "est_cost_usd_lvp": 0.0375
+      },
+      "answers": [
+        {
+          "provider": "deepseek",
+          "question": "What is happening in this video?",
+          "error": "Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}",
+          "mode": "lvp_keyframes"
+        }
+      ]
+    },
+    {
+      "video": "/Users/girish11/Downloads/lvp-package/uploads/1_minute_funny_videos.mp4",
+      "metrics": {
+        "source": "1_minute_funny_videos.mp4",
+        "original_bytes": 2314019,
+        "lvp_bytes": 144070,
+        "compression_ratio": 16.06,
+        "keyframes": 16,
+        "scenes": 11,
+        "has_transcript": false,
+        "keyframe_method": "scene_adaptive",
+        "estimated_tokens": 16000,
+        "packaging_latency_ms": 1047.8,
+        "profile": "balanced",
+        "ffmpeg_version": "8.0.1"
+      },
+      "bandwidth": {
+        "original_mb": 2.314,
+        "lvp_mb": 0.144,
+        "saved_mb": 2.17,
+        "compression_ratio": 16.06,
+        "estimated_input_tokens": 16000,
+        "est_cost_usd_lvp": 0.045
+      },
+      "answers": [
+        {
+          "provider": "deepseek",
+          "question": "What is happening in this video?",
+          "error": "Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}",
+          "mode": "lvp_keyframes"
+        }
+      ]
+    },
+    {
+      "video": "/Users/girish11/Downloads/lvp-package/uploads/A_one_minute_TEDx_Talk_for_the_digital_age_Woody_Roseland_TEDxMileHigh.mp4",
+      "metrics": {
+        "source": "A_one_minute_TEDx_Talk_for_the_digital_age_Woody_Roseland_TEDxMileHigh.mp4",
+        "original_bytes": 2631608,
+        "lvp_bytes": 105389,
+        "compression_ratio": 24.97,
+        "keyframes": 16,
+        "scenes": 4,
+        "has_transcript": false,
+        "keyframe_method": "scene_adaptive",
+        "estimated_tokens": 16000,
+        "packaging_latency_ms": 1042.3,
+        "profile": "balanced",
+        "ffmpeg_version": "8.0.1"
+      },
+      "bandwidth": {
+        "original_mb": 2.632,
+        "lvp_mb": 0.105,
+        "saved_mb": 2.526,
+        "compression_ratio": 24.97,
+        "estimated_input_tokens": 16000,
+        "est_cost_usd_lvp": 0.045
+      },
+      "answers": [
+        {
+          "provider": "deepseek",
+          "question": "What is happening in this video?",
+          "error": "Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}",
+          "mode": "lvp_keyframes"
+        }
+      ]
+    },
+    {
+      "video": "/Users/girish11/Downloads/lvp-package/uploads/test_audio_video.mp4",
+      "metrics": {
+        "source": "test_audio_video.mp4",
+        "original_bytes": 749201,
+        "lvp_bytes": 11745,
+        "compression_ratio": 63.79,
+        "keyframes": 1,
+        "scenes": 1,
+        "has_transcript": false,
+        "keyframe_method": "scene_adaptive",
+        "estimated_tokens": 1000,
+        "packaging_latency_ms": 210.2,
+        "profile": "balanced",
+        "ffmpeg_version": "8.0.1"
+      },
+      "bandwidth": {
+        "original_mb": 0.749,
+        "lvp_mb": 0.012,
+        "saved_mb": 0.737,
+        "compression_ratio": 63.79,
+        "estimated_input_tokens": 1000,
+        "est_cost_usd_lvp": 0.0075
+      },
+      "answers": [
+        {
+          "provider": "deepseek",
+          "question": "What is happening in this video?",
+          "error": "Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}",
+          "mode": "lvp_keyframes"
+        }
+      ]
+    },
+    {
+      "video": "/Users/girish11/Downloads/lvp-package/uploads/test_video_longer.mp4",
+      "metrics": {
+        "source": "test_video_longer.mp4",
+        "original_bytes": 8706521,
+        "lvp_bytes": 46083,
+        "compression_ratio": 188.93,
+        "keyframes": 8,
+        "scenes": 1,
+        "has_transcript": false,
+        "keyframe_method": "scene_adaptive",
+        "estimated_tokens": 8000,
+        "packaging_latency_ms": 818.3,
+        "profile": "balanced",
+        "ffmpeg_version": "8.0.1"
+      },
+      "bandwidth": {
+        "original_mb": 8.707,
+        "lvp_mb": 0.046,
+        "saved_mb": 8.66,
+        "compression_ratio": 188.93,
+        "estimated_input_tokens": 8000,
+        "est_cost_usd_lvp": 0.025
+      },
+      "answers": [
+        {
+          "provider": "deepseek",
+          "question": "What is happening in this video?",
+          "error": "Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}",
+          "mode": "lvp_keyframes"
+        }
+      ]
+    },
+    {
+      "video": "/Users/girish11/Downloads/lvp-package/benchmarks/data/open_samples/filesample_sample_960x400.mp4",
+      "metrics": {
+        "source": "filesample_sample_960x400.mp4",
+        "original_bytes": 17520898,
+        "lvp_bytes": 264378,
+        "compression_ratio": 66.27,
+        "keyframes": 16,
+        "scenes": 15,
+        "has_transcript": false,
+        "keyframe_method": "scene_adaptive",
+        "estimated_tokens": 16000,
+        "packaging_latency_ms": 1220.2,
+        "profile": "balanced",
+        "ffmpeg_version": "8.0.1"
+      },
+      "bandwidth": {
+        "original_mb": 17.521,
+        "lvp_mb": 0.264,
+        "saved_mb": 17.257,
+        "compression_ratio": 66.27,
+        "estimated_input_tokens": 16000,
+        "est_cost_usd_lvp": 0.045
+      },
+      "answers": [
+        {
+          "provider": "deepseek",
+          "question": "What is happening in this video?",
+          "error": "Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}",
+          "mode": "lvp_keyframes"
+        }
+      ]
+    },
+    {
+      "video": "/Users/girish11/Downloads/lvp-package/benchmarks/data/open_samples/intel_face_demographics.mp4",
+      "metrics": {
+        "source": "intel_face_demographics.mp4",
+        "original_bytes": 9406029,
+        "lvp_bytes": 65233,
+        "compression_ratio": 144.19,
+        "keyframes": 18,
+        "scenes": 1,
+        "has_transcript": false,
+        "keyframe_method": "scene_adaptive",
+        "estimated_tokens": 18000,
+        "packaging_latency_ms": 1150.5,
+        "profile": "balanced",
+        "ffmpeg_version": "8.0.1"
+      },
+      "bandwidth": {
+        "original_mb": 9.406,
+        "lvp_mb": 0.065,
+        "saved_mb": 9.341,
+        "compression_ratio": 144.19,
+        "estimated_input_tokens": 18000,
+        "est_cost_usd_lvp": 0.05
+      },
+      "answers": [
+        {
+          "provider": "deepseek",
+          "question": "What is happening in this video?",
+          "error": "Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}",
+          "mode": "lvp_keyframes"
+        }
+      ]
+    },
+    {
+      "video": "/Users/girish11/Downloads/lvp-package/benchmarks/data/open_samples/intel_person_detection.mp4",
+      "metrics": {
+        "source": "intel_person_detection.mp4",
+        "original_bytes": 6031199,
+        "lvp_bytes": 34643,
+        "compression_ratio": 174.1,
+        "keyframes": 10,
+        "scenes": 1,
+        "has_transcript": false,
+        "keyframe_method": "scene_adaptive",
+        "estimated_tokens": 10000,
+        "packaging_latency_ms": 701.5,
+        "profile": "balanced",
+        "ffmpeg_version": "8.0.1"
+      },
+      "bandwidth": {
+        "original_mb": 6.031,
+        "lvp_mb": 0.035,
+        "saved_mb": 5.997,
+        "compression_ratio": 174.1,
+        "estimated_input_tokens": 10000,
+        "est_cost_usd_lvp": 0.03
+      },
+      "answers": [
+        {
+          "provider": "deepseek",
+          "question": "What is happening in this video?",
+          "error": "Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}",
+          "mode": "lvp_keyframes"
+        }
+      ]
+    },
+    {
+      "video": "/Users/girish11/Downloads/lvp-package/benchmarks/data/open_samples/learningcontainer_small.mp4",
+      "metrics": {
+        "source": "learningcontainer_small.mp4",
+        "original_bytes": 10546620,
+        "lvp_bytes": 296032,
+        "compression_ratio": 35.63,
+        "keyframes": 34,
+        "scenes": 26,
+        "has_transcript": false,
+        "keyframe_method": "scene_adaptive",
+        "estimated_tokens": 34000,
+        "packaging_latency_ms": 2001.1,
+        "profile": "balanced",
+        "ffmpeg_version": "8.0.1"
+      },
+      "bandwidth": {
+        "original_mb": 10.547,
+        "lvp_mb": 0.296,
+        "saved_mb": 10.251,
+        "compression_ratio": 35.63,
+        "estimated_input_tokens": 34000,
+        "est_cost_usd_lvp": 0.09
+      },
+      "answers": [
+        {
+          "provider": "deepseek",
+          "question": "What is happening in this video?",
+          "error": "Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}",
+          "mode": "lvp_keyframes"
+        }
+      ]
+    },
+    {
+      "video": "/Users/girish11/Downloads/lvp-package/benchmarks/data/open_samples/samplelib_10s.mp4",
+      "metrics": {
+        "source": "samplelib_10s.mp4",
+        "original_bytes": 5485935,
+        "lvp_bytes": 90239,
+        "compression_ratio": 60.79,
+        "keyframes": 2,
+        "scenes": 1,
+        "has_transcript": false,
+        "keyframe_method": "scene_adaptive",
+        "estimated_tokens": 2000,
+        "packaging_latency_ms": 632.5,
+        "profile": "balanced",
+        "ffmpeg_version": "8.0.1"
+      },
+      "bandwidth": {
+        "original_mb": 5.486,
+        "lvp_mb": 0.09,
+        "saved_mb": 5.396,
+        "compression_ratio": 60.79,
+        "estimated_input_tokens": 2000,
+        "est_cost_usd_lvp": 0.01
+      },
+      "answers": [
+        {
+          "provider": "deepseek",
+          "question": "What is happening in this video?",
+          "error": "Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}",
+          "mode": "lvp_keyframes"
+        }
+      ]
+    },
+    {
+      "video": "/Users/girish11/Downloads/lvp-package/benchmarks/data/open_samples/samplelib_20s.mp4",
+      "metrics": {
+        "source": "samplelib_20s.mp4",
+        "original_bytes": 11815175,
+        "lvp_bytes": 183121,
+        "compression_ratio": 64.52,
+        "keyframes": 4,
+        "scenes": 1,
+        "has_transcript": false,
+        "keyframe_method": "scene_adaptive",
+        "estimated_tokens": 4000,
+        "packaging_latency_ms": 1102.3,
+        "profile": "balanced",
+        "ffmpeg_version": "8.0.1"
+      },
+      "bandwidth": {
+        "original_mb": 11.815,
+        "lvp_mb": 0.183,
+        "saved_mb": 11.632,
+        "compression_ratio": 64.52,
+        "estimated_input_tokens": 4000,
+        "est_cost_usd_lvp": 0.015
+      },
+      "answers": [
+        {
+          "provider": "deepseek",
+          "question": "What is happening in this video?",
+          "error": "Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}",
+          "mode": "lvp_keyframes"
+        }
+      ]
+    },
+    {
+      "video": "/Users/girish11/Downloads/lvp-package/benchmarks/data/open_samples/samplelib_5s.mp4",
+      "metrics": {
+        "source": "samplelib_5s.mp4",
+        "original_bytes": 2848208,
+        "lvp_bytes": 49592,
+        "compression_ratio": 57.43,
+        "keyframes": 1,
+        "scenes": 1,
+        "has_transcript": false,
+        "keyframe_method": "scene_adaptive",
+        "estimated_tokens": 1000,
+        "packaging_latency_ms": 360.9,
+        "profile": "balanced",
+        "ffmpeg_version": "8.0.1"
+      },
+      "bandwidth": {
+        "original_mb": 2.848,
+        "lvp_mb": 0.05,
+        "saved_mb": 2.799,
+        "compression_ratio": 57.43,
+        "estimated_input_tokens": 1000,
+        "est_cost_usd_lvp": 0.0075
+      },
+      "answers": [
+        {
+          "provider": "deepseek",
+          "question": "What is happening in this video?",
+          "error": "Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}",
+          "mode": "lvp_keyframes"
+        }
+      ]
+    },
+    {
+      "video": "/Users/girish11/Downloads/lvp-package/benchmarks/data/open_samples/test_videos_bunny.mp4",
+      "metrics": {
+        "source": "test_videos_bunny.mp4",
+        "original_bytes": 991017,
+        "lvp_bytes": 56180,
+        "compression_ratio": 17.64,
+        "keyframes": 2,
+        "scenes": 1,
+        "has_transcript": false,
+        "keyframe_method": "scene_adaptive",
+        "estimated_tokens": 2000,
+        "packaging_latency_ms": 313.5,
+        "profile": "balanced",
+        "ffmpeg_version": "8.0.1"
+      },
+      "bandwidth": {
+        "original_mb": 0.991,
+        "lvp_mb": 0.056,
+        "saved_mb": 0.935,
+        "compression_ratio": 17.64,
+        "estimated_input_tokens": 2000,
+        "est_cost_usd_lvp": 0.01
+      },
+      "answers": [
+        {
+          "provider": "deepseek",
+          "question": "What is happening in this video?",
+          "error": "Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}",
+          "mode": "lvp_keyframes"
+        }
+      ]
+    },
+    {
+      "video": "/Users/girish11/Downloads/lvp-package/benchmarks/data/open_samples/w3c_test_fragment.mp4",
+      "metrics": {
+        "source": "w3c_test_fragment.mp4",
+        "original_bytes": 1128375,
+        "lvp_bytes": 9859,
+        "compression_ratio": 114.45,
+        "keyframes": 1,
+        "scenes": 1,
+        "has_transcript": false,
+        "keyframe_method": "scene_adaptive",
+        "estimated_tokens": 1000,
+        "packaging_latency_ms": 201.8,
+        "profile": "balanced",
+        "ffmpeg_version": "8.0.1"
+      },
+      "bandwidth": {
+        "original_mb": 1.128,
+        "lvp_mb": 0.01,
+        "saved_mb": 1.119,
+        "compression_ratio": 114.45,
+        "estimated_input_tokens": 1000,
+        "est_cost_usd_lvp": 0.0075
+      },
+      "answers": [
+        {
+          "provider": "deepseek",
+          "question": "What is happening in this video?",
+          "error": "Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}",
+          "mode": "lvp_keyframes"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "videos_ok": 14,
+    "avg_compression_ratio": 74.43,
+    "min_compression_ratio": 13.26,
+    "max_compression_ratio": 188.93,
+    "answers_ok": 0,
+    "answers_error": 14,
+    "text_only_fallbacks": 0
+  }
+}

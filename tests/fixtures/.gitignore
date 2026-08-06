@@ -1,0 +1,5 @@
+# Generated and checked-in synthetic fixtures live here.
+# sample_colorbars.mp4 is created on first pytest run if missing.
+*
+!.gitignore
+!README.md

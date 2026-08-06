@@ -5,16 +5,19 @@ LVP Core Processor
 Main processing pipeline for creating LVP packages from video files.
 """
 
-import os
+from __future__ import annotations
+
 import json
+import os
 import subprocess
 import tempfile
-import zipfile
+from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional, Tuple, Dict, Any
-from dataclasses import dataclass, asdict
+from typing import Any, Dict, List, Optional, Tuple
 
+from lvp.core.ffmpeg_compat import FFmpegVersion, check_ffmpeg_compatibility
 from lvp.core.package import LVPPackage
+from lvp.core.selection import estimate_token_cost, select_by_query
 
 
 @dataclass
@@ -68,17 +71,17 @@ DEVICE_PROFILES = {
 class LVPProcessor:
     """
     Main processor for creating LVP packages from videos.
-    
+
     Example:
         >>> processor = LVPProcessor(device_profile='balanced')
         >>> package = processor.process('video.mp4')
         >>> package.save('video.lvp')
     """
-    
+
     def __init__(self, device_profile: str = 'balanced'):
         """
         Initialize the LVP processor.
-        
+
         Args:
             device_profile: One of 'minimal', 'balanced', 'quality', 'maximum'
         """
@@ -88,22 +91,12 @@ class LVPProcessor:
                 f"Choose from: {list(DEVICE_PROFILES.keys())}"
             )
         self.profile = DEVICE_PROFILES[device_profile]
-        self._check_dependencies()
-    
-    def _check_dependencies(self):
-        """Verify required tools are available."""
-        try:
-            subprocess.run(
-                ['ffmpeg', '-version'], 
-                capture_output=True, 
-                check=True
-            )
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            raise RuntimeError(
-                "FFmpeg not found. Please install FFmpeg: "
-                "https://ffmpeg.org/download.html"
-            )
-    
+        self.ffmpeg_version: FFmpegVersion = self._check_dependencies()
+
+    def _check_dependencies(self) -> FFmpegVersion:
+        """Verify FFmpeg is available and compatible (8.x / 9.0+)."""
+        return check_ffmpeg_compatibility(warn=True)
+
     def _get_video_info(self, video_path: str) -> Dict[str, Any]:
         """Extract video metadata using ffprobe."""
         cmd = [
@@ -114,15 +107,15 @@ class LVPProcessor:
         if result.returncode != 0:
             raise RuntimeError(f"Failed to read video: {result.stderr}")
         return json.loads(result.stdout)
-    
+
     def _detect_scenes(
-        self, 
-        video_path: str, 
+        self,
+        video_path: str,
         threshold: float = 0.3
     ) -> List[float]:
         """
         Detect scene changes using FFmpeg's scene filter.
-        
+
         Returns list of timestamps where scenes change.
         """
         cmd = [
@@ -131,7 +124,7 @@ class LVPProcessor:
             '-f', 'null', '-'
         ]
         result = subprocess.run(cmd, capture_output=True, text=True)
-        
+
         scene_times = [0.0]
         for line in result.stderr.split('\n'):
             if 'pts_time:' in line:
@@ -140,9 +133,9 @@ class LVPProcessor:
                     scene_times.append(float(pts_part))
                 except (IndexError, ValueError):
                     continue
-        
+
         return sorted(set(scene_times))
-    
+
     def _select_keyframe_timestamps(
         self,
         duration: float,
@@ -151,7 +144,7 @@ class LVPProcessor:
     ) -> List[float]:
         """
         Select keyframe timestamps using adaptive algorithm.
-        
+
         Strategy:
         1. Always include scene boundaries
         2. Fill gaps with uniform sampling
@@ -159,16 +152,14 @@ class LVPProcessor:
         """
         if target_count is None:
             target_count = max(
-                1, 
+                1,
                 int(duration / 60 * self.profile.keyframes_per_minute)
             )
-        
+
         min_gap = duration / (target_count * 2) if target_count > 0 else 1.0
-        
-        # Start with scene boundaries
+
         selected = set(scene_times)
-        
-        # Add uniformly spaced frames
+
         if target_count > 0:
             uniform_interval = duration / target_count
             for i in range(target_count):
@@ -176,8 +167,7 @@ class LVPProcessor:
                 too_close = any(abs(ts - s) < min_gap for s in selected)
                 if not too_close:
                     selected.add(ts)
-        
-        # Limit total count
+
         selected = sorted(selected)
         if len(selected) > target_count * 1.5:
             scene_set = set(scene_times)
@@ -187,9 +177,27 @@ class LVPProcessor:
                 step = max(1, len(non_scene) // keep_count)
                 non_scene = non_scene[::step][:keep_count]
             selected = sorted(set(scene_times) | set(non_scene))
-        
+
         return selected
-    
+
+    def _candidate_pool(
+        self,
+        duration: float,
+        scene_times: List[float],
+        dense_count: Optional[int] = None,
+    ) -> List[float]:
+        """Build a dense candidate pool for query-aware ranking."""
+        base = self._select_keyframe_timestamps(
+            duration, scene_times, target_count=dense_count
+        )
+        # Extra uniform samples for ranking headroom
+        extra_n = max(len(base) * 2, 24)
+        extra = [
+            i * duration / max(extra_n - 1, 1)
+            for i in range(extra_n)
+        ]
+        return sorted(set(round(t, 3) for t in (base + extra + list(scene_times))))
+
     def _extract_keyframes(
         self,
         video_path: str,
@@ -199,7 +207,7 @@ class LVPProcessor:
         """Extract keyframes at specified timestamps as WebP images."""
         keyframe_paths = []
         w, h = self.profile.resolution
-        
+
         for i, ts in enumerate(timestamps):
             output_path = os.path.join(output_dir, f'frame_{i:04d}.webp')
             cmd = [
@@ -212,40 +220,35 @@ class LVPProcessor:
             result = subprocess.run(cmd, capture_output=True)
             if result.returncode == 0 and os.path.exists(output_path):
                 keyframe_paths.append(output_path)
-        
+
         return keyframe_paths
-    
+
     def _extract_transcript(
         self,
         video_path: str,
         output_dir: str
     ) -> Optional[Dict[str, Any]]:
         """
-        Extract audio and generate transcript.
-        
-        Note: Full implementation requires Whisper.
-        This version creates a placeholder or uses system ASR.
+        Extract audio and generate transcript via Whisper when available.
         """
         audio_path = os.path.join(output_dir, 'audio.wav')
-        
-        # Extract audio
+
         cmd = [
             'ffmpeg', '-i', video_path,
-            '-vn', '-acodec', 'pcm_s16le', 
+            '-vn', '-acodec', 'pcm_s16le',
             '-ar', '16000', '-ac', '1',
             '-y', audio_path
         ]
         result = subprocess.run(cmd, capture_output=True)
-        
+
         if result.returncode != 0 or not os.path.exists(audio_path):
             return None
-        
-        # Check if whisper is available
+
         try:
             import whisper
             model = whisper.load_model(self.profile.transcription_model)
             result = model.transcribe(audio_path)
-            
+
             segments = [
                 {
                     'start': seg['start'],
@@ -256,15 +259,14 @@ class LVPProcessor:
                 }
                 for seg in result.get('segments', [])
             ]
-            
+
             return {
                 'segments': segments,
                 'full_text': result.get('text', '').strip(),
                 'language': result.get('language', 'en')
             }
-            
+
         except ImportError:
-            # Whisper not installed - return placeholder
             return {
                 'segments': [{
                     'start': 0.0,
@@ -276,32 +278,35 @@ class LVPProcessor:
                 'full_text': '[Whisper not installed]',
                 'language': 'unknown'
             }
-    
+
     def process(
         self,
         video_path: str,
         include_transcript: bool = True,
         target_keyframes: Optional[int] = None,
-        scene_threshold: float = 0.3
-    ) -> 'LVPPackage':
+        scene_threshold: float = 0.3,
+        query: Optional[str] = None,
+        token_budget: Optional[int] = None,
+    ) -> LVPPackage:
         """
         Process a video and create an LVP package.
-        
+
         Args:
             video_path: Path to input video
             include_transcript: Whether to include speech transcript
             target_keyframes: Override automatic keyframe count
             scene_threshold: Sensitivity for scene detection (0-1)
-            
+            query: Optional question for query-aware keyframe selection
+            token_budget: Optional approximate vision-token budget
+
         Returns:
             LVPPackage object
         """
         start_time = datetime.now()
-        
+
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Video not found: {video_path}")
-        
-        # Get video info
+
         video_info = self._get_video_info(video_path)
         video_stream = next(
             (s for s in video_info['streams'] if s['codec_type'] == 'video'),
@@ -309,36 +314,55 @@ class LVPProcessor:
         )
         if video_stream is None:
             raise ValueError("No video stream found in file")
-        
+
         duration = float(video_info['format']['duration'])
         width = int(video_stream['width'])
         height = int(video_stream['height'])
         source_size = os.path.getsize(video_path)
-        
-        # Process in temp directory
+
         with tempfile.TemporaryDirectory() as temp_dir:
             keyframes_dir = os.path.join(temp_dir, 'keyframes')
             os.makedirs(keyframes_dir)
-            
-            # Detect scenes
+
             scene_times = self._detect_scenes(video_path, scene_threshold)
-            
-            # Select keyframes
-            timestamps = self._select_keyframe_timestamps(
-                duration, scene_times, target_keyframes
-            )
-            
-            # Extract keyframes
-            keyframe_paths = self._extract_keyframes(
-                video_path, timestamps, keyframes_dir
-            )
-            
-            # Extract transcript
+
             transcript_data = None
             if include_transcript:
                 transcript_data = self._extract_transcript(video_path, temp_dir)
-            
-            # Build scene info
+
+            use_query_aware = bool(query) or token_budget is not None
+            keyframe_method = 'scene_adaptive'
+
+            if use_query_aware:
+                keyframe_method = 'query_aware' if query else 'token_budget'
+                dense = target_keyframes
+                if dense is None:
+                    dense = max(
+                        1,
+                        int(duration / 60 * self.profile.keyframes_per_minute * 2),
+                    )
+                candidates = self._candidate_pool(duration, scene_times, dense)
+                timestamps = select_by_query(
+                    candidates=candidates,
+                    duration=duration,
+                    scene_times=scene_times,
+                    transcript=transcript_data,
+                    query=query,
+                    token_budget=token_budget,
+                    max_keyframes=target_keyframes or max(
+                        1,
+                        int(duration / 60 * self.profile.keyframes_per_minute),
+                    ),
+                )
+            else:
+                timestamps = self._select_keyframe_timestamps(
+                    duration, scene_times, target_keyframes
+                )
+
+            keyframe_paths = self._extract_keyframes(
+                video_path, timestamps, keyframes_dir
+            )
+
             scenes = []
             for i, (start, end) in enumerate(
                 zip(scene_times, scene_times[1:] + [duration])
@@ -353,30 +377,61 @@ class LVPProcessor:
                     'end_time': end,
                     'keyframe_indices': scene_keyframes
                 })
-            
+
             processing_time = (datetime.now() - start_time).total_seconds()
-            
-            # Read keyframe data into memory BEFORE temp dir is cleaned up
+
             keyframe_data = []
             for kf_path in keyframe_paths:
                 if os.path.exists(kf_path):
                     with open(kf_path, 'rb') as f:
                         keyframe_data.append(f.read())
-            
-            # Create package with keyframe data in memory
+
+            transcript_chars = len(
+                (transcript_data or {}).get('full_text', '') or ''
+            )
+            est_tokens = estimate_token_cost(len(keyframe_data), transcript_chars)
+
             package = LVPPackage(
                 source_filename=os.path.basename(video_path),
                 source_duration=duration,
                 source_resolution=(width, height),
                 source_size=source_size,
-                keyframe_paths=[],  # Paths no longer valid after temp cleanup
+                keyframe_paths=[],
                 keyframe_timestamps=timestamps,
                 keyframe_resolution=self.profile.resolution,
                 transcript=transcript_data,
                 scenes=scenes,
                 profile_name=self.profile.name,
                 processing_time=processing_time,
-                _keyframe_data=keyframe_data  # Store actual data
+                keyframe_method=keyframe_method,
+                query=query,
+                estimated_tokens=est_tokens,
+                ffmpeg_version=str(self.ffmpeg_version),
+                _keyframe_data=keyframe_data,
             )
-            
+
             return package
+
+    def process_chunked(
+        self,
+        video_path: str,
+        chunk_duration: float = 600.0,
+        overlap: float = 5.0,
+        output_dir: Optional[str] = None,
+        include_transcript: bool = True,
+        query: Optional[str] = None,
+        token_budget: Optional[int] = None,
+    ):
+        """Process a long video as overlapping LVP chunks."""
+        from lvp.core.chunking import process_chunked
+
+        return process_chunked(
+            self,
+            video_path,
+            chunk_duration=chunk_duration,
+            overlap=overlap,
+            output_dir=output_dir,
+            include_transcript=include_transcript,
+            query=query,
+            token_budget=token_budget,
+        )

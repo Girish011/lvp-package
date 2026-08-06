@@ -71,13 +71,26 @@ venv.bak/
 
 # Project specific
 *.lvp
-*.mp4
 *.avi
 *.mov
 *.mkv
 *.webm
+# Keep root/uploads media private; fixtures are generated under tests/
+*.mp4
+!tests/fixtures/.gitkeep
 test_videos/
 output/
-
 uploads/
 extracted/
+benchmarks/data/
+benchmarks/results/*
+!benchmarks/results/.gitkeep
+!benchmarks/results/SAMPLE_TABLE.md
+!benchmarks/results/sample_dry_run.json
+!benchmarks/results/PACKAGING_SUMMARY.md
+!benchmarks/results/batch_packaging_deepseek.json
+examples/demo_assets/
+dist/
+*.egg-info/
+comparison_report.json
+lvp_test_results.json

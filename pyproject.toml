@@ -3,14 +3,14 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "lvp"
-version = "0.1.0"
-description = "A universal standard for bandwidth-efficient video upload to multimodal LLMs"
+name = "lvp-package"
+version = "0.2.0"
+description = "Edge preprocessing for bandwidth-efficient video input to multimodal LLMs"
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 authors = [
-    {name = "LVP Research Partnership"}
+    {name = "Girish Sekar"}
 ]
 keywords = [
     "video",
@@ -19,19 +19,19 @@ keywords = [
     "preprocessing",
     "bandwidth",
     "ai",
-    "machine-learning",
+    "whisper",
+    "ffmpeg",
     "claude",
-    "gpt-4v",
+    "gpt-4o",
     "gemini"
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -39,42 +39,56 @@ classifiers = [
     "Topic :: Multimedia :: Video",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
+dependencies = []
 
 [project.optional-dependencies]
-whisper = ["openai-whisper"]
-claude = ["anthropic"]
-openai = ["openai"]
-gemini = ["google-generativeai"]
+whisper = ["openai-whisper>=20231117"]
+claude = ["anthropic>=0.40.0", "Pillow>=10.0.0"]
+openai = ["openai>=1.40.0", "Pillow>=10.0.0"]
+gemini = ["google-generativeai>=0.8.0", "Pillow>=10.0.0"]
+deepseek = ["openai>=1.40.0", "Pillow>=10.0.0"]
+langchain = ["langchain-core>=0.2.0"]
 all = [
-    "openai-whisper",
-    "anthropic",
-    "openai",
-    "google-generativeai",
+    "openai-whisper>=20231117",
+    "anthropic>=0.40.0",
+    "openai>=1.40.0",
+    "google-generativeai>=0.8.0",
+    "Pillow>=10.0.0",
+    "langchain-core>=0.2.0",
 ]
 dev = [
-    "pytest",
-    "pytest-cov",
-    "black",
-    "isort",
-    "mypy",
-    "ruff",
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=24.0",
+    "isort>=5.0",
+    "mypy>=1.0",
+    "ruff>=0.5.0",
+    "build>=1.0",
+    "twine>=5.0",
 ]
 
 [project.scripts]
 lvp = "lvp.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/lvp-research/lvp"
-Documentation = "https://github.com/lvp-research/lvp#readme"
-Repository = "https://github.com/lvp-research/lvp"
-Issues = "https://github.com/lvp-research/lvp/issues"
+Homepage = "https://github.com/Girish011/lvp-package"
+Documentation = "https://github.com/Girish011/lvp-package#readme"
+Repository = "https://github.com/Girish011/lvp-package"
+Issues = "https://github.com/Girish011/lvp-package/issues"
+Changelog = "https://github.com/Girish011/lvp-package/blob/master/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["."]
+include = ["lvp*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q"
 
 [tool.black]
 line-length = 88
-target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+target-version = ['py39', 'py310', 'py311', 'py312']
 
 [tool.isort]
 profile = "black"
@@ -82,9 +96,23 @@ line_length = 88
 
 [tool.ruff]
 line-length = 88
-target-version = "py38"
+target-version = "py39"
+exclude = [
+    "venv",
+    ".venv",
+    "tests/quality_comparison.py",
+    "tests/lvp_openai_test.py",
+    "lvp.egg-info",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
+ignore_missing_imports = true

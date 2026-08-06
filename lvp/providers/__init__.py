@@ -5,10 +5,10 @@ LVP Providers
 Integration with various LLM providers (Claude, GPT-4V, Gemini, etc.)
 """
 
-import os
 import base64
+import os
 from abc import ABC, abstractmethod
-from typing import Optional, List, Dict, Any
+from typing import List, Optional
 
 from lvp.core.package import LVPPackage
 
@@ -38,7 +38,6 @@ class LLMProvider(ABC):
         Returns:
             LLM response text
         """
-        pass
     
     def _prepare_keyframes_base64(
         self, 
@@ -279,14 +278,14 @@ class GeminiProvider(LLMProvider):
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "gemini-1.5-flash"
+        model: str = "gemini-2.0-flash"
     ):
         """
         Initialize Gemini provider.
-        
+
         Args:
             api_key: Google AI API key (or set GOOGLE_API_KEY env var)
-            model: Model to use (default: gemini-1.5-flash)
+            model: Model to use (default: gemini-2.0-flash)
         """
         self.api_key = api_key or os.environ.get('GOOGLE_API_KEY')
         self.model = model
@@ -345,10 +344,100 @@ class GeminiProvider(LLMProvider):
         return response.text
 
 
+class DeepSeekProvider(LLMProvider):
+    """
+    DeepSeek vision/chat via OpenAI-compatible API.
+
+    Requires: pip install openai
+    Env: DEEPSEEK_API_KEY
+
+    Example:
+        >>> from lvp.providers import DeepSeekProvider
+        >>> ds = DeepSeekProvider()
+        >>> response = ds.query(package, "What happens in this video?")
+    """
+
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model: str = "deepseek-v4-pro",
+        base_url: str = "https://api.deepseek.com",
+    ):
+        self.api_key = api_key or os.environ.get("DEEPSEEK_API_KEY")
+        self.model = model
+        self.base_url = base_url
+        if not self.api_key:
+            raise ValueError(
+                "API key required. Pass api_key or set DEEPSEEK_API_KEY"
+            )
+
+    def query(
+        self,
+        package: LVPPackage,
+        question: str,
+        max_tokens: int = 4096,
+        **kwargs,
+    ) -> str:
+        try:
+            import openai
+        except ImportError as exc:
+            raise ImportError(
+                "openai package required. Install with: pip install openai"
+            ) from exc
+
+        client = openai.OpenAI(api_key=self.api_key, base_url=self.base_url)
+        keyframes_b64 = self._prepare_keyframes_base64(package)
+        context = self._build_context(package)
+
+        content = [
+            {
+                "type": "text",
+                "text": (
+                    "I'm sharing keyframes from a video for analysis.\n\n"
+                    f"{context}\n\nKeyframes follow, then the question."
+                ),
+            }
+        ]
+        for b64_data in keyframes_b64:
+            content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/webp;base64,{b64_data}"
+                    },
+                }
+            )
+        content.append({"type": "text", "text": f"\nQuestion: {question}"})
+
+        try:
+            response = client.chat.completions.create(
+                model=self.model,
+                max_tokens=max_tokens,
+                messages=[{"role": "user", "content": content}],
+            )
+            return response.choices[0].message.content
+        except Exception:
+            # Fallback: transcript/context-only if the account/model rejects images
+            text_only = (
+                f"{context}\n\nQuestion: {question}\n"
+                "(Note: images omitted — model may be text-only on this account.)"
+            )
+            response = client.chat.completions.create(
+                model=self.model,
+                max_tokens=max_tokens,
+                messages=[{"role": "user", "content": text_only}],
+            )
+            return (
+                "[deepseek:image_fallback_text_only] "
+                + (response.choices[0].message.content or "")
+            )
+
+
 # Export all providers
 __all__ = [
-    'LLMProvider',
-    'ClaudeProvider', 
-    'OpenAIProvider',
-    'GeminiProvider'
+    "LLMProvider",
+    "ClaudeProvider",
+    "OpenAIProvider",
+    "GeminiProvider",
+    "DeepSeekProvider",
 ]

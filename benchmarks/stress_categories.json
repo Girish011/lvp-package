@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "ocr",
+      "goal": "Dense on-screen text / UI readability",
+      "suggested_metrics": ["ocr_string_match", "upload_bytes", "estimated_tokens"],
+      "lvp_tips": ["Use quality or maximum profile", "Increase keyframes_per_minute"]
+    },
+    {
+      "id": "action",
+      "goal": "Fast motion / sports / cuts",
+      "suggested_metrics": ["event_recall", "upload_bytes"],
+      "lvp_tips": ["Expect native video to win often", "Raise scene sensitivity / keyframe rate"]
+    },
+    {
+      "id": "speech",
+      "goal": "Talks, podcasts, meetings",
+      "suggested_metrics": ["answer_correctness", "wer", "upload_bytes"],
+      "lvp_tips": ["Transcript on; query-aware selection helps"]
+    },
+    {
+      "id": "long",
+      "goal": "Videos longer than 10 minutes",
+      "suggested_metrics": ["chunk_count", "total_upload_bytes", "end_to_end_latency"],
+      "lvp_tips": ["Use lvp.process_chunked", "Overlap 5–15s"]
+    },
+    {
+      "id": "multilingual_asr",
+      "goal": "Non-English or noisy speech",
+      "suggested_metrics": ["wer", "language_id"],
+      "lvp_tips": ["Larger Whisper model via quality/maximum profile"]
+    },
+    {
+      "id": "privacy",
+      "goal": "Raw video must not leave device",
+      "suggested_metrics": ["bytes_uploaded", "local_only"],
+      "lvp_tips": ["Local Whisper only", "Send .lvp keyframes+text"]
+    }
+  ]
+}
